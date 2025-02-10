@@ -4,4 +4,6 @@ build/
 .hgignore
 *.pyc
 *.pyo
+*.bak
 __pycache__/
+repo_test.log
