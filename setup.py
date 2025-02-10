@@ -13,7 +13,7 @@ Enhanced Library -- extras beyond Python's stdlib
 
 data = dict(
        name='enhlib',
-       version='0.0.1',
+       version='0.0.2a1',
        url='https://github.com/ethanfurman/enhlib',
        packages=['enhlib'],
        package_data={
