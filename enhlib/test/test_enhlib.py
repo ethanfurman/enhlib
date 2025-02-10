@@ -291,6 +291,13 @@ class Test_xrange(TestCase):
 
 
 
+class Test_datetime(TestCase):
+    #
+    def test_basics(self):
+        from .. import datetime
+        datetime.moments
+
+
 if __name__ == '__main__':
     unittest.main()
 
