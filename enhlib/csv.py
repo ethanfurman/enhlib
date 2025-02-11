@@ -2,7 +2,7 @@ from __future__ import division, print_function
 
 from .collections import AttrDict
 from .dbf import Date, DateTime, Time
-from datetime import date, datetime, time
+from .datetime import date, datetime, time
 
 import codecs
 

@@ -21,7 +21,7 @@ def nested_property(func):
 
 
 try:
-    from functools import simplegeneric
+    from .stlib.functools import simplegeneric
 except ImportError:
 
     def simplegeneric(func):

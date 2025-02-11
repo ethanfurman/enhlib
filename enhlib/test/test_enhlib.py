@@ -298,6 +298,61 @@ class Test_datetime(TestCase):
         datetime.moments
 
 
+class Test_collections(TestCase):
+    #
+    def test_basics(self):
+        from .. import collections
+        collections.OrderedDict
+
+class Test_contextlib(TestCase):
+    #
+    def test_basics(self):
+        from .. import contextlib
+        contextlib.suppress
+
+
+class Test_csv(TestCase):
+    #
+    def test_basics(self):
+        from .. import csv
+        csv.CSV
+
+
+class Test_functools(TestCase):
+    #
+    def test_basics(self):
+        from .. import functools
+        functools.simplegeneric
+
+
+class Test_itertools(TestCase):
+    #
+    def test_basics(self):
+        from .. import itertools
+        itertools.all_equal
+
+
+class Test_random(TestCase):
+    #
+    def test_basics(self):
+        from .. import random
+        random.TinyRand
+
+
+class Test_text(TestCase):
+     #
+     def test_basics(self):
+         from .. import text
+         text.translator
+
+
+class Test_types(TestCase):
+    #
+    def test_basics(self):
+        from .. import types
+        types.MISSING
+
+
 if __name__ == '__main__':
     unittest.main()
 

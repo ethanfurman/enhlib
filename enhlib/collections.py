@@ -1,6 +1,6 @@
 from __future__ import division, print_function
 
-from collections import OrderedDict
+from .stdlib.collections import OrderedDict
 from .types import MISSING
 
 
