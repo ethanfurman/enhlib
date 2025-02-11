@@ -330,6 +330,8 @@ class Test_itertools(TestCase):
     def test_basics(self):
         from .. import itertools
         itertools.all_equal
+        itertools.grouped
+        itertools.grouped_by_column
 
 
 class Test_random(TestCase):

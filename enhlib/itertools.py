@@ -17,6 +17,35 @@ def all_equal(iterator, test=None):
     return all(test(x) for x in it)
 
 
+def grouped(it, size):
+    'yield chunks of it in groups of size'
+    if size < 1:
+        raise ValueError('size must be greater than 0 (not %r)' % size)
+    result = []
+    count = 0
+    for ele in it:
+        result.append(ele)
+        count += 1
+        if count == size:
+            yield tuple(result)
+            count = 0
+            result = []
+    if result:
+        yield tuple(result)
+
+def grouped_by_column(it, size):
+    'yield chunks of it in groups of size columns'
+    if size < 1:
+        raise ValueError('size must be greater than 0 (not %r)' % size)
+    elements = list(it)
+    iters = []
+    rows, remainder = divmod(len(elements), size)
+    if remainder:
+        rows += 1
+    for column in grouped(elements, rows):
+        iters.append(column)
+    return zip_longest(*iters, fillvalue='')
+
 class xrange(object):
     """
     Accepts arbitrary objects to use to produce sequence iterators.
@@ -45,7 +74,7 @@ class xrange(object):
         #   x      x            x     step=1
         #   x            x      x
         #   x      x     x      x
-        #   
+        #
         combo = [1 if a is not None else 0 for a in (start, stop, step, count)]
         if combo not in (
                 [0, 1, 0, 0],
@@ -105,14 +134,14 @@ class xrange(object):
         if self.stop is not None:
             values.append(repr(self.stop))
         values.extend([
-                '%s=%r' % (k,v)
-                for k,v in (
-                    ('step', self.step),
-                    ('count', self.count),
-                    ('epsilon', self.epsilon),
-                    )
-                if v is not None
-                ])
+            '%s=%r' % (k,v)
+            for k,v in (
+                ('step', self.step),
+                ('count', self.count),
+                ('epsilon', self.epsilon),
+                )
+            if v is not None
+            ])
         return '%s(%s)' % (self.__class__.__name__, ', '.join(values))
 
     def _generate_values(self):
