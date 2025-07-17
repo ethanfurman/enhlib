@@ -44,7 +44,7 @@ sys.modules['enhlib.stdlib.tkinter'] = tkinter
 sys.modules['enhlib.stdlib.io'] = io
 
 if sys.version_info < (3, ):
-    class colls(object):
+    class abc(object):
         from collections import Callable
         from collections import Container
         from collections import Counter
@@ -63,17 +63,17 @@ if sys.version_info < (3, ):
         from collections import Set
         from collections import Sized
         from collections import ValuesView
-    sys.modules['enhlib.stdlib.collections.abc'] = colls
+    collections.abc = abc()
+    sys.modules['enhlib.stdlib.collections.abc'] = collections.abc
 else:
     from collections import abc
     sys.modules['enhlib.stdlib.collections.abc'] = abc
 
 if sys.version_info < (3, ):
-    builtins.range = xrange
-    builtins.zip = itertools.izip
-    builtins.input = raw_input
-    builtins.map = itertools.imap
-    functools.reduce = reduce
+    range = xrange
+    zip = itertools.izip
+    input = raw_input
+    map = itertools.imap
     sys.intern = intern
 
 
