@@ -30,8 +30,8 @@ def ord(int_or_char):
     else:
         return _bi_ord(int_or_char)
 
-def dir(obj, search=None):
+def dir(obj, pat=None):
     res = builtins.dir(obj)
-    if search is not None:
-        res = [s for s in res if re.search(res)]
+    if pat is not None:
+        res = [s for s in res if _re.search(pat, s)]
     return res
