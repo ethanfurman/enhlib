@@ -1,3 +1,4 @@
+import re as _re
 import sys as _sys
 
 PY_VER = _sys.version_info[:2]
@@ -29,4 +30,8 @@ def ord(int_or_char):
     else:
         return _bi_ord(int_or_char)
 
-
+def dir(obj, search=None):
+    res = builtins.dir(obj)
+    if search is not None:
+        res = [s for s in res if re.search(res)]
+    return res
