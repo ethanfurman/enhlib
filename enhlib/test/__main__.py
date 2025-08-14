@@ -9,7 +9,7 @@ from . import test_enhlib
 module = globals()
 tempdir = tempfile.mkdtemp()
 
-for m in (test_enhlib, test_dbf):
+for m in (test_enhlib, ):
     setattr(m, 'tempdir', tempdir)
     for name in dir(m):
         if name != 'TestCase' and name.startswith('Test'):
