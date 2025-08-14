@@ -5,7 +5,6 @@ import tempfile
 import unittest
 
 from . import test_enhlib
-from . import test_dbf
 
 module = globals()
 tempdir = tempfile.mkdtemp()
