@@ -15,7 +15,7 @@ data = dict(
        name='enhlib',
        version='0.0.9a1',
        url='https://github.com/ethanfurman/enhlib',
-       packages=['enhlib','enhlib.dbf','enhlib.stdlib','enhlib.test'],
+       packages=['enhlib','enhlib.stdlib','enhlib.test'],
        package_data={
            'enhlib' : [
                'LICENSE',
