@@ -1,15 +1,25 @@
 from __future__ import print_function
 
 from ..contextlib import suppress
+from ..csv import CSV
 from ..itertools import all_equal, xrange
 from ..text import translator
 import datetime
+import re
 import unittest
 
 try:
     from string import letters, digits, lowercase, uppercase
 except ImportError:
     from string import ascii_letters as letters, digits, ascii_lowercase as lowercase, ascii_uppercase as uppercase
+
+try:
+    from enum import Enum
+except ImportError:
+    try:
+        from aenum import Enum
+    except ImportError:
+        Enum = None
 
 ## globals
 
@@ -313,9 +323,35 @@ class Test_contextlib(TestCase):
 
 class Test_csv(TestCase):
     #
-    def test_basics(self):
-        from .. import csv
-        csv.CSV
+    def test_plain_data_types(self):
+        csv = CSV('test.csv', mode='w')
+        data_line = True, False, 7.9, 'hello!', datetime.date(2025, 5, 20)
+        csv_line = csv.to_csv(*data_line)
+        self.assertEqual(csv_line, """t,f,7.9,"hello!",2025-05-20""")
+        self.assertEqual(csv.from_csv(csv_line), data_line)
+
+    def test_custom_data_types(self):
+        class Custom(object):
+            def __init__(self, value):
+                self.value = value
+            def __repr__(self):
+                return ('Custom(%r)' % self.value)
+            def __eq__(self, other):
+                if isinstance(other, self.__class__):
+                    return self.value == other.value
+                return NotImplemented
+        #
+        def test_custom(text):
+            return bool(re.match('^Custom[(][^)]*[)]$', text))
+        def convert_custom(row, text):
+            value ,= re.match('^Custom[(]([^)]*)[)]$', text).groups()
+            return Custom(eval(value))
+        #
+        csv = CSV('test.csv', mode='w', custom_types=((test_custom, convert_custom), ))
+        data_line = True, False, Custom(7.9), 'hello!', datetime.date(2025, 5, 20)
+        csv_line = csv.to_csv(*data_line)
+        self.assertEqual(csv_line, """t,f,Custom(7.9),"hello!",2025-05-20""")
+        self.assertEqual(csv.from_csv(csv_line), data_line)
 
 
 class Test_functools(TestCase):
