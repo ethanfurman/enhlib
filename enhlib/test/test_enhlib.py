@@ -342,9 +342,9 @@ class Test_csv(TestCase):
                 return NotImplemented
         #
         def test_custom(text):
-            return bool(re.match('^Custom[(][^)]*[)]$', text))
+            return bool(re.match(r'^Custom[(][^)]*[)]$', text))
         def convert_custom(row, text):
-            value ,= re.match('^Custom[(]([^)]*)[)]$', text).groups()
+            value ,= re.match(r'^Custom[(]([^)]*)[)]$', text).groups()
             return Custom(eval(value))
         #
         csv = CSV('test.csv', mode='w', custom_types=((test_custom, convert_custom), ))
