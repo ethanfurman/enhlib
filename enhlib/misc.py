@@ -38,15 +38,15 @@ def dir(obj, pat=None):
 
 def zip(*iterables, **kwds):
     for parm in kwds:
-        if parm not in ('strict', 'fill'):
+        if parm not in ('strict', 'fillvalue'):
             raise TypeError('zip: invalid argument %r' % parm)
     strict = kwds.get('strict', False)
     fill = False
-    if 'fill' in kwds:
+    if 'fillvalue' in kwds:
         if strict:
-            raise ValueError('cannot have both strict and fill')
+            raise ValueError('cannot have both strict and fillvalue')
         fill = True
-        fill_value = kwds['fill']
+        fill_value = kwds['fillvalue']
     iterables = [iter(it) for it in iterables]
     while "more values possible":
         res = []

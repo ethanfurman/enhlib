@@ -418,19 +418,19 @@ class TestZip(TestCase):
     #
     def test_fill(self):
         self.assertEqual(
-                list(zip(range(5), range(5, 10), fill=0)),
+                list(zip(range(5), range(5, 10), fillvalue=0)),
                 [(0, 5), (1, 6), (2, 7), (3, 8), (4, 9)],
                 )
         self.assertEqual(
-                list(zip(range(5), range(5, 10), range(10, 15), fill=0)),
+                list(zip(range(5), range(5, 10), range(10, 15), fillvalue=0)),
                 [(0, 5, 10), (1, 6, 11), (2, 7, 12), (3, 8, 13), (4, 9, 14)],
                 )
         self.assertEqual(
-                list(zip(range(5), range(5, 8), fill=0)),
+                list(zip(range(5), range(5, 8), fillvalue=0)),
                 [(0, 5), (1, 6), (2, 7), (3, 0), (4, 0)],
                 )
         self.assertEqual(
-                list(zip(range(5), range(5, 8), range(10, 11), fill=0)),
+                list(zip(range(5), range(5, 8), range(10, 11), fillvalue=0)),
                 [(0, 5, 10), (1, 6, 0), (2, 7, 0), (3, 0, 0), (4, 0, 0)],
                 )
 
