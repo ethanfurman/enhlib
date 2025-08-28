@@ -3,6 +3,7 @@ from __future__ import print_function
 from ..contextlib import suppress
 from ..csv import CSV
 from ..itertools import all_equal, xrange
+from ..misc import zip
 from ..text import translator
 import datetime
 import re
@@ -389,6 +390,50 @@ class Test_types(TestCase):
     def test_basics(self):
         from .. import types
         types.MISSING
+
+
+class TestZip(TestCase):
+    #
+    def test_equal_2(self):
+        self.assertEqual(
+                list(zip(range(5), range(5, 10))),
+                [(0, 5), (1, 6), (2, 7), (3, 8), (4, 9)],
+                )
+    #
+    def test_equal_3(self):
+        self.assertEqual(
+                list(zip(range(5), range(5, 10), range(10, 15))),
+                [(0, 5, 10), (1, 6, 11), (2, 7, 12), (3, 8, 13), (4, 9, 14)],
+                )
+    #
+    def test_no_valueerror(self):
+        self.assertEqual(
+                list(zip(range(4), range(5, 10))),
+                [(0, 5), (1, 6), (2, 7), (3, 8)],
+                )
+    #
+    def test_valueerror(self):
+        with self.assertRaisesRegex(ValueError, 'zip argument 1 is too short'):
+            list(zip(range(4), range(5, 10), strict=True))
+    #
+    def test_fill(self):
+        self.assertEqual(
+                list(zip(range(5), range(5, 10), fill=0)),
+                [(0, 5), (1, 6), (2, 7), (3, 8), (4, 9)],
+                )
+        self.assertEqual(
+                list(zip(range(5), range(5, 10), range(10, 15), fill=0)),
+                [(0, 5, 10), (1, 6, 11), (2, 7, 12), (3, 8, 13), (4, 9, 14)],
+                )
+        self.assertEqual(
+                list(zip(range(5), range(5, 8), fill=0)),
+                [(0, 5), (1, 6), (2, 7), (3, 0), (4, 0)],
+                )
+        self.assertEqual(
+                list(zip(range(5), range(5, 8), range(10, 11), fill=0)),
+                [(0, 5, 10), (1, 6, 0), (2, 7, 0), (3, 0, 0), (4, 0, 0)],
+                )
+
 
 
 if __name__ == '__main__':
