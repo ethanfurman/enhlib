@@ -72,10 +72,16 @@ else:
 if sys.version_info < (3, ):
     range = xrange
     zip = itertools.izip
+    zip_longest = itertools.izip_longest
     input = raw_input
     map = itertools.imap
     sys.intern = intern
-
+else:
+    range = range
+    zip = zip
+    zip_longest = itertools.zip_longest
+    input = input
+    map = map
 
 # dbm_gnu gdbm dbm.gnu
 # dbm_ndbm dbm dbm.ndbm
@@ -125,7 +131,5 @@ if sys.version_info < (3, ):
 # UserString UserString.UserString collections.UserString
 # xmlrpc_client xmlrpclib xmlrpc.client
 # xmlrpc_server SimpleXMLRPCServer xmlrpc.server
-# zip_longest itertools.izip_longest() itertools.zip_longest()
 # import _winreg as winreg
-# range xrange() range
 

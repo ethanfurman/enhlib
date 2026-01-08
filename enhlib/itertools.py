@@ -2,6 +2,7 @@ from __future__ import division, print_function
 
 import sys
 sys
+from enhlib.stdlib.itertools import zip_longest
 
 def all_equal(iterator, test=None):
     """
