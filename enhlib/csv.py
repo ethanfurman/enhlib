@@ -3,7 +3,7 @@ from __future__ import division, print_function
 from . import *
 from .collections import AttrDict
 from .datetime import dates, times, datetimes, Date, Time, DateTime
-from .types import Logical
+from .types import Logical, Unknown
 import codecs
 import datetime
 import re
@@ -38,18 +38,29 @@ class CSV(object):
     _float = float
     _int = long
     _none = lambda s: None
+    _types = True
 
     def __init__(self, filename, mode='r', header=True, types={}, default_type=None, custom_types=None):
         """
         filename: name of csv file to either read or write
         mode: open mode to use with file; defaults to `'r'`
         header: first line of read file is header?  default is `True`
-        types: types to use for std data types
+        types: types to use for data conversion
         default_type: type to use if known types fail; default is raise an exception
         custom_types: tuple of `(test(text), convert(col#, text))` functions
         """
         if mode not in ('r','w'):
             raise ValueError("mode must be 'r' or 'w', not %r" % (mode, ))
+        if types is None:
+            self._types = None
+            types = {}
+        elif types == 'stdlib':
+            types = {
+                    '_date': dt.date,
+                    '_time': dt.time,
+                    '_datetime': dt.datetime,
+                    '_bool': bool,
+                    }
         for n, t in types.items():
             if n not in (
                     'bool', 'float', 'int', 'str',
@@ -196,10 +207,13 @@ class CSV(object):
         for i, field in enumerate(fields):
             try:
                 if not field:
-                    final.append(self._none(None))
+                    final.append(self._none())
+                    continue
+                elif self._types is None:
+                    final.append(field)
                     continue
                 for test, convert in self.custom_types:
-                    if test(field):
+                    if test(i, field):
                         final.append(convert(i, field))
                         break
                 else:
@@ -210,6 +224,8 @@ class CSV(object):
                         final.append(self._bool(True))
                     elif field.lower() in ('false','no','off','f'):
                         final.append(self._bool(False))
+                    elif field == '?':
+                        final.append(self._bool(None))
                     elif '-' in field and ':' in field:
                         # TODO: use a re instead and support time zones
                         try:
@@ -299,7 +315,10 @@ class CSV(object):
             elif isinstance(datum, (times + (self._time, ))):
                 line.append(datum.strftime('%H:%M:%S'))
             elif isinstance(datum, (bool, Logical, self._bool)):
-                line.append('ft'[datum])
+                if datum is Unknown:
+                    line.append('?')
+                else:
+                    line.append('ft'[datum])
             elif isinstance(datum, enums):
                 line.append(repr(datum.value))
             else:
