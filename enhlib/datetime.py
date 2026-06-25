@@ -1,6 +1,14 @@
+from __future__ import print_function
+
 from . import *
 from .stdlib import datetime as dt
+import sys
 import time
+
+if PY_VER < (3, 4):
+    from aenum import Enum as _Enum, IntEnum as _IntEnum
+else:
+    from enum import Enum as _Enum, IntEnum as _IntEnum
 
 try:
     import pytz
@@ -11,6 +19,159 @@ OD = 86400
 OH = 3600
 OM = 60
 MILLION = 1000000
+
+def _export(enum):
+    globals().update(enum.__members__)
+    return enum
+
+    # dec jan feb mar apr may jun jul aug sep oct nov dec jan
+days_per_month = [31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31]
+days_per_leap_month = [31, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31]
+
+def days_in_month(year):
+    return (days_per_month, days_per_leap_month)[is_leapyear(year)]
+
+def is_leapyear(year):
+    if year % 400 == 0:
+        return True
+    elif year % 100 == 0:
+        return False
+    elif year % 4 == 0:
+        return True
+    else:
+        return False
+
+
+## Constants
+
+class IsoDay(_IntEnum):
+    MONDAY = 1
+    TUESDAY = 2
+    WEDNESDAY = 3
+    THURSDAY = 4
+    FRIDAY = 5
+    SATURDAY = 6
+    SUNDAY = 7
+
+    def next_delta(self, day):
+        """Return number of days needed to get from self to day."""
+        if self == day:
+            return 7
+        delta = day - self
+        if delta < 0:
+            delta += 7
+        return delta
+
+    def last_delta(self, day):
+        """Return number of days needed to get from self to day."""
+        if self == day:
+            return -7
+        delta = day - self
+        if delta > 0:
+            delta -= 7
+        return delta
+
+
+@_export
+class RelativeDay(_Enum):
+    LAST_SUNDAY = ()
+    LAST_SATURDAY = ()
+    LAST_FRIDAY = ()
+    LAST_THURSDAY = ()
+    LAST_WEDNESDAY = ()
+    LAST_TUESDAY = ()
+    LAST_MONDAY = ()
+    NEXT_MONDAY = ()
+    NEXT_TUESDAY = ()
+    NEXT_WEDNESDAY = ()
+    NEXT_THURSDAY = ()
+    NEXT_FRIDAY = ()
+    NEXT_SATURDAY = ()
+    NEXT_SUNDAY = ()
+
+    def __new__(cls):
+        result = object.__new__(cls)
+        result._value = len(cls.__members__) + 1
+        return result
+
+    def days_from(self, day):
+        target = IsoDay[self.name[5:]]
+        if self.name[:4] == 'LAST':
+            return day.last_delta(target)
+        return day.next_delta(target)
+
+
+class IsoMonth(_IntEnum):
+    JANUARY = 1
+    FEBRUARY = 2
+    MARCH = 3
+    APRIL = 4
+    MAY = 5
+    JUNE = 6
+    JULY = 7
+    AUGUST = 8
+    SEPTEMBER = 9
+    OCTOBER = 10
+    NOVEMBER = 11
+    DECEMBER = 12
+
+    def next_delta(self, month):
+        """Return number of months needed to get from self to month."""
+        if self == month:
+            return 12
+        delta = month - self
+        if delta < 0:
+            delta += 12
+        return delta
+
+    def last_delta(self, month):
+        """Return number of months needed to get from self to month."""
+        if self == month:
+            return -12
+        delta = month - self
+        if delta > 0:
+            delta -= 12
+        return delta
+
+
+@_export
+class RelativeMonth(_Enum):
+    LAST_DECEMBER = ()
+    LAST_NOVEMBER = ()
+    LAST_OCTOBER = ()
+    LAST_SEPTEMBER = ()
+    LAST_AUGUST = ()
+    LAST_JULY = ()
+    LAST_JUNE = ()
+    LAST_MAY = ()
+    LAST_APRIL = ()
+    LAST_MARCH= ()
+    LAST_FEBRUARY = ()
+    LAST_JANUARY = ()
+    NEXT_JANUARY = ()
+    NEXT_FEBRUARY = ()
+    NEXT_MARCH = ()
+    NEXT_APRIL = ()
+    NEXT_MAY = ()
+    NEXT_JUNE = ()
+    NEXT_JULY = ()
+    NEXT_AUGUST = ()
+    NEXT_SEPTEMBER = ()
+    NEXT_OCTOBER = ()
+    NEXT_NOVEMBER = ()
+    NEXT_DECEMBER = ()
+
+    def __new__(cls):
+        result = object.__new__(cls)
+        result._value = len(cls.__members__) + 1
+        return result
+
+    def months_from(self, month):
+        target = IsoMonth[self.name[5:]]
+        if self.name[:4] == 'LAST':
+            return month.last_delta(target)
+        return month.next_delta(target)
+
 
 ## wrappers around datetime and logical objects to allow null values
 
@@ -40,7 +201,7 @@ class Date(object):
         return nd
 
     def __add__(self, other):
-        if self and isinstance(other, dt.timedelta):
+        if self and isinstance(other, timedeltas):
             return Date(self._date + other)
         else:
             return NotImplemented
@@ -166,9 +327,7 @@ class Date(object):
 
     def __rsub__(self, other):
         if self and isinstance(other, dt.date):
-            return other - self._date
-        elif self and isinstance(other, Date):
-            return other._date - self._date
+            return TimeDelta(other - self._date)
         else:
             return NotImplemented
 
@@ -185,10 +344,10 @@ class Date(object):
 
     def __sub__(self, other):
         if self and isinstance(other, dt.date):
-            return self._date - other
+            return TimeDelta(self._date - other)
         elif self and isinstance(other, Date):
-            return self._date - other._date
-        elif self and isinstance(other, dt.timedelta):
+            return TimeDelta(self._date - other._date)
+        elif self and isinstance(other, timedeltas):
             return Date(self._date - other)
         else:
             return NotImplemented
@@ -325,7 +484,7 @@ class DateTime(object):
         return ndt
 
     def __add__(self, other):
-        if self and isinstance(other, dt.timedelta):
+        if self and isinstance(other, timedeltas):
             return DateTime(self._datetime + other)
         else:
             return NotImplemented
@@ -453,9 +612,7 @@ class DateTime(object):
 
     def __rsub__(self, other):
         if self and isinstance(other, dt.datetime):
-            return other - self._datetime
-        elif self and isinstance(other, DateTime):
-            return other._datetime - self._datetime
+            return TimeDelta(other - self._datetime)
         else:
             return NotImplemented
 
@@ -481,10 +638,10 @@ class DateTime(object):
 
     def __sub__(self, other):
         if self and isinstance(other, dt.datetime):
-            return self._datetime - other
+            return TimeDelta(self._datetime - other)
         elif self and isinstance(other, DateTime):
-            return self._datetime - other._datetime
-        elif self and isinstance(other, dt.timedelta):
+            return TimeDelta(self._datetime - other._datetime)
+        elif self and isinstance(other, timedeltas):
             return DateTime(self._datetime - other)
         else:
             return NotImplemented
@@ -535,7 +692,8 @@ class DateTime(object):
         ):
         if not self:
             return DateTime._null_datetime
-        old_year, old_month, old_day, old_hour, old_minute, old_second, old_micro = self.timetuple()[:7]
+        old_year, old_month, old_day, old_hour, old_minute, old_second = self.timetuple()[:6]
+        old_micro = self.microsecond
         if tzinfo is None:
             tzinfo = self._datetime.tzinfo
         if isinstance(month, RelativeMonth):
@@ -819,7 +977,7 @@ class Time(object):
             t = dt.datetime(2012, 6, 27, t.hour, t.minute, t.second, t.microsecond)
             other = dt.datetime(2012, 6, 27, other.hour, other.minute, other.second, other.microsecond)
             other -= t
-            return other
+            return TimeDelta(other)
         else:
             return NotImplemented
 
@@ -846,7 +1004,7 @@ class Time(object):
             t = self._time
             t = dt.datetime(2012, 6, 27, t.hour, t.minute, t.second, t.microsecond)
             o = dt.datetime(2012, 6, 27, other.hour, other.minute, other.second, other.microsecond)
-            return t - o
+            return TimeDelta(t - o)
         elif self and isinstance(other, timedeltas):
             t = self._time
             t = dt.datetime(2012, 6, 27, t.hour, t.minute, t.second, t.microsecond)
@@ -1015,8 +1173,8 @@ class TimeDelta(object):
         elif isinstance(other, times):
             cls = type(other)
             _days, seconds = divmod(self.seconds, OD)
-            nt = Time(other).replace(delta_seconds=seconds, delta_microseconds=self.microseconds)
-            return cls(nt.hours, nt.minutes, nt.seconds, nt.microseconds, nt.tzinfo)
+            nt = Time(other).replace(delta_second=seconds, delta_microsecond=self.microseconds)
+            return cls(nt.hour, nt.minute, nt.second, nt.microsecond, nt.tzinfo)
         else:
             raise TypeError('unhandled type %r [%r]' % (type(other), other))
 
@@ -1024,7 +1182,11 @@ class TimeDelta(object):
 
     def __truediv__(self, other):
         try:
-            return ((self.days*OD + self.seconds) * MILLION + self.microseconds) // (other * MILLION) // MILLION
+            if isinstance(other, timedeltas):
+                other = (other.days*OD + other.seconds) * MILLION + other.microseconds
+            else:
+                other *= MILLION
+            return ((self.days*OD + self.seconds) * MILLION + self.microseconds) / other
         except (ValueError, TypeError):
             return NotImplemented
 
@@ -1034,12 +1196,16 @@ class TimeDelta(object):
     def __divmod__(self, other):
         try:
             total = (self.days*OD + self.seconds) * MILLION + self.microseconds
-            other *= MILLION
+            if isinstance(other, timedeltas):
+                other = (other.days*OD + other.seconds) * MILLION + other.microseconds
+            else:
+                other *= MILLION
             q = total // other
             s, m = divmod(total-q*other, MILLION)
             r = TimeDelta(seconds=s, microseconds=m)
             return q, r
         except (ValueError, TypeError):
+            raise
             return NotImplemented
 
     def __eq__(self, other):
@@ -1049,7 +1215,11 @@ class TimeDelta(object):
 
     def __floordiv__(self, other):
         try:
-            return ((self.days*OD) + (self.seconds) + (self.microseconds/MILLION)) // other
+            if isinstance(other, timedeltas):
+                other = (other.days*OD + other.seconds) * MILLION + other.microseconds
+            else:
+                other *= MILLION
+            return ((self.days*OD + self.seconds) * MILLION + self.microseconds) // other
         except (ValueError, TypeError):
             return NotImplemented
 
@@ -1137,7 +1307,7 @@ class TimeDelta(object):
         if isinstance(other, timedeltas):
             return TimeDelta(other.days-self.days, other.seconds-self.seconds, int(other.microseconds)-self.microseconds)
         elif isinstance(other, moments):
-            return other - td.timedelta(self.days, self.seconds, self.microseconds)
+            return other - dt.timedelta(self.days, self.seconds, self.microseconds)
         else:
             return NotImplemented
 
@@ -1210,3 +1380,19 @@ times = Time, dt.time
 datetimes = DateTime, dt.datetime
 moments = dates + times + datetimes
 timedeltas = TimeDelta, dt.timedelta
+
+
+# add xmlrpc support
+if PY_VER < (3, 0):
+    from xmlrpclib import Marshaller
+else:
+    from xmlrpc.client import Marshaller
+
+# DateTime is transmitted as UTC if aware, local if naive
+Marshaller.dispatch[DateTime] = lambda s, dt, w: w(
+        '<value><dateTime.iso8601>'
+        '%04d%02d%02dT%02d:%02d:%02d'
+        '</dateTime.iso8601></value>\n'
+            % dt.utctimetuple()[:6])
+del Marshaller
+

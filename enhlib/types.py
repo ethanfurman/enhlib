@@ -1,6 +1,6 @@
 from __future__ import division, print_function
 
-from . import *
+from . import baseinteger, basestring, PY_VER
 
     # gets replaced later by their final values
 Unknown = Null = object()
@@ -503,3 +503,16 @@ class Sentinel(object):
 
 
 MISSING = Sentinel('MISSING', doc="argument not provided by caller")
+
+
+# add xmlrpc support
+if PY_VER < (3, 0):
+    from xmlrpclib import Marshaller
+else:
+    from xmlrpc.client import Marshaller
+
+# Logical unknown becomes False
+Marshaller.dispatch[Logical] = Marshaller.dump_bool
+del Marshaller
+
+

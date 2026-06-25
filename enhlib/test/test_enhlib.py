@@ -400,7 +400,7 @@ class Test_datetime(TestCase):
         #
         udt2 = DateTime(2018, 5, 20, 13, 41, 33, tzinfo=utc)
         mdt2 = mdt.replace(tzinfo=pst)
-        self.assertTrue(mdt2 == udt2)
+        self.assertTrue(mdt2 == udt2, "%r != %r" % (mdt2, udt2))
         #
         with self.assertRaisesRegex(ValueError, 'not naive datetime'):
             DateTime(pdt, tzinfo=mst)
@@ -441,6 +441,92 @@ class Test_datetime(TestCase):
         self.assertEqual(an_appt + displacement, DateTime(2012, 4, 16, 14, 45, 0))
         self.assertEqual(an_appt - displacement, DateTime(2012, 4, 14, 10, 15, 0))
         self.assertEqual(dt.datetime(2012, 4, 16, 14, 45, 0) - an_appt, displacement)
+        #
+        one_day = TimeDelta(1)
+        a_day = dt.date(1970, 5, 20)
+        self.assertEqual(a_day + one_day, dt.date(1970, 5, 21))
+        self.assertTrue(type(a_day + one_day) is dt.date)
+        self.assertEqual(a_day - one_day, dt.date(1970, 5, 19))
+        self.assertTrue(type(a_day - one_day) is dt.date)
+        self.assertEqual(TimeDelta(dt.date(1970, 5, 21) - a_day), one_day)
+        an_appt = dt.datetime(2012, 4, 15, 12, 30, 00)
+        displacement = TimeDelta(1, 60*60*2+60*15)
+        self.assertEqual(an_appt + displacement, dt.datetime(2012, 4, 16, 14, 45, 0))
+        self.assertTrue(type(an_appt + displacement) is dt.datetime)
+        self.assertEqual(an_appt - displacement, dt.datetime(2012, 4, 14, 10, 15, 0))
+        self.assertTrue(type(an_appt - displacement) is dt.datetime)
+        self.assertEqual(TimeDelta(dt.datetime(2012, 4, 16, 14, 45, 0) - an_appt), displacement)
+        #
+        one_day = TimeDelta(1)
+        a_day = Date(1970, 5, 20)
+        self.assertEqual(a_day + one_day, Date(1970, 5, 21))
+        self.assertEqual(a_day - one_day, Date(1970, 5, 19))
+        self.assertEqual(dt.date(1970, 5, 21) - a_day, one_day)
+        a_time = Time(12)
+        one_second = TimeDelta(0, 1, 0)
+        self.assertEqual(a_time + one_second, Time(12, 0, 1))
+        self.assertEqual(a_time - one_second, Time(11, 59, 59))
+        self.assertEqual(dt.time(12, 0, 1) - a_time, one_second)
+        an_appt = DateTime(2012, 4, 15, 12, 30, 00)
+        displacement = TimeDelta(1, 60*60*2+60*15)
+        self.assertEqual(an_appt + displacement, DateTime(2012, 4, 16, 14, 45, 0))
+        self.assertEqual(an_appt - displacement, DateTime(2012, 4, 14, 10, 15, 0))
+        self.assertEqual(dt.datetime(2012, 4, 16, 14, 45, 0) - an_appt, displacement)
+
+    def test_arithmetic_timedelta_1(self):
+        one_day = dt.timedelta(1)
+        un_dia = TimeDelta(1)
+        one_hour = dt.timedelta(seconds=60*60)
+        una_hora = TimeDelta(seconds=60*60)
+        zero = dt.timedelta(0)
+        cero = TimeDelta(0)
+        #
+        self.assertEqual(one_hour - una_hora, zero)
+        self.assertEqual(one_hour - una_hora, cero)
+        self.assertEqual(una_hora - one_hour, zero)
+        self.assertEqual(una_hora - one_hour, cero)
+        #
+        self.assertEqual(un_dia/one_hour, 24)
+        self.assertEqual(un_dia/una_hora, 24)
+        self.assertEqual(un_dia//one_hour, 24)
+        self.assertEqual(un_dia//una_hora, 24)
+        #
+        self.assertEqual((one_day+una_hora)/one_hour, 25)
+        self.assertEqual((one_day+una_hora)/una_hora, 25)
+        self.assertEqual((un_dia+one_hour)/one_hour, 25)
+        self.assertEqual((un_dia+una_hora)/one_hour, 25)
+        self.assertEqual((un_dia+one_hour)/una_hora, 25)
+        self.assertEqual((un_dia+una_hora)/una_hora, 25)
+        #
+        self.assertEqual((one_day+una_hora)//one_hour, 25)
+        self.assertEqual((one_day+una_hora)//una_hora, 25)
+        self.assertEqual((un_dia+one_hour)//one_hour, 25)
+        self.assertEqual((un_dia+una_hora)//one_hour, 25)
+        self.assertEqual((un_dia+one_hour)//una_hora, 25)
+        self.assertEqual((un_dia+una_hora)//una_hora, 25)
+        #
+        self.assertEqual(un_dia/24, 3600)
+        self.assertEqual((un_dia+una_hora) / 25, 3600)
+        self.assertEqual((un_dia+una_hora) % (24*60*60), una_hora)
+        self.assertEqual(divmod(un_dia, una_hora), (24, cero))
+        self.assertEqual(divmod((un_dia+una_hora), 24*60*60), (1, una_hora))
+
+    @unittest.skipIf(PY_VER < (3, 15), 'datetime.timedelta does not play nice')
+    def test_arithmetic_timedelta_2(self):
+        one_day = dt.timedelta(1)
+        un_dia = TimeDelta(1)
+        one_hour = dt.timedelta(seconds=60*60)
+        una_hora = TimeDelta(seconds=60*60)
+        zero = dt.timedelta(0)
+        cero = TimeDelta(0)
+        #
+        self.assertEqual(one_hour, una_hora)
+        self.assertEqual(one_hour - one_hour, cero)
+        self.assertEqual(one_day/una_hora, 24)
+        self.assertEqual(one_day//una_hora, 24)
+        self.assertEqual((one_day+one_hour)/una_hora, 25)
+        self.assertEqual((one_day+one_hour)//una_hora, 25)
+
 
     def test_none_compare(self):
         empty_date = Date()
