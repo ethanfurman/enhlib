@@ -72,14 +72,13 @@ else:
 if sys.version_info < (3, ):
     range = xrange
     zip = itertools.izip
-    zip_longest = itertools.izip_longest
+    itertools.zip_longest = itertools.izip_longest
     input = raw_input
     map = itertools.imap
     sys.intern = intern
 else:
     range = range
     zip = zip
-    zip_longest = itertools.zip_longest
     input = input
     map = map
 

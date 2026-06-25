@@ -1,8 +1,10 @@
 from __future__ import division, print_function
 
+from . import *
 from .stdlib.collections import OrderedDict
 from .types import MISSING
 
+import sys
 
 class AttrDict(object):
     """
@@ -323,8 +325,45 @@ class BiDict(object):
         return [self._dict[key] for key in self._primary_keys]
 
 
+class fifo(object):
+    """
+    a list subset that is safe to modify during iteration (not threadsafe)
+    """
+
+    def __new__(cls, items=()):
+        self = object.__new__(cls)
+        self.task_list = tl = []
+        for item in items:
+            tl.append(item)
+        return self
+
+    def __iter__(self):
+        return self
+
+    def __len__(self):
+        return len(self.task_list)
+
+    def __next__(self):
+        if not self.task_list:
+            raise StopIteration
+        return self.task_list.pop(0)
+
+    if sys.version_info[:2] < (3, 0):
+        next = __next__
+
+    def __repr__(self):
+        return "fifo(%r)" % self.task_list
+
+    def append(self, item):
+        self.task_list.append(item)
+
+    def pop(self):
+        return self.task_list.pop(0)
+
+
 class TransformDict(dict):
-    '''Dictionary that calls a transformation function when looking
+    """
+    Dictionary that calls a transformation function when looking
     up keys, but preserves the original keys.
 
     >>> d = TransformDict(str.lower)
@@ -333,15 +372,16 @@ class TransformDict(dict):
     True
     >>> set(d.keys())
     {'Foo'}
-    '''
+    """
 
     __slots__ = ('_transform', '_original', '_data')
 
     def __init__(self, transform, init_dict=None, **kwargs):
-        '''Create a new TransformDict with the given *transform* function.
+        """
+        Create a new TransformDict with the given *transform* function.
         *init_dict* and *kwargs* are optional initializers, as in the
         dict constructor.
-        '''
+        """
         if not callable(transform):
             raise TypeError("expected a callable, got %r" % transform.__class__)
         self._transform = transform
@@ -401,9 +441,10 @@ class TransformDict(dict):
         return self._data.get(self._transform(key), default)
 
     def pop(self, key, default=MISSING):
-        '''D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
-          If key is not found, d is returned if given, otherwise KeyError is raised.
-        '''
+        """
+        D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
+        If key is not found, d is returned if given, otherwise KeyError is raised.
+        """
         transformed = self._transform(key)
         if default is MISSING:
             del self._original[transformed]
@@ -413,9 +454,9 @@ class TransformDict(dict):
             return self._data.pop(transformed, default)
 
     def popitem(self):
-        '''D.popitem() -> (k, v), remove and return some (key, value) pair
+        """D.popitem() -> (k, v), remove and return some (key, value) pair
            as a 2-tuple; but raise KeyError if D is empty.
-        '''
+        """
         transformed, value = self._data.popitem()
         return self._original.pop(transformed), value
 

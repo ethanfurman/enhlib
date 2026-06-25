@@ -1,11 +1,12 @@
 from __future__ import division, print_function
 
+from . import *
 from .collections import AttrDict
+from .datetime import dates, times, datetimes, Date, Time, DateTime
+from .types import Logical
 import codecs
 import datetime
-from .misc import basestring, unicode
 import re
-
 
 enums = ()
 try:
@@ -30,12 +31,12 @@ class CSV(object):
     represents a .csv file
     """
     _str = unicode
-    _date = datetime.date
-    _time = datetime.time
-    _datetime = datetime.datetime
-    _bool = bool
+    _date = Date
+    _time = Time
+    _datetime = DateTime
+    _bool = Logical
     _float = float
-    _int = int
+    _int = long
     _none = lambda s: None
 
     def __init__(self, filename, mode='r', header=True, types={}, default_type=None, custom_types=None):
@@ -53,6 +54,7 @@ class CSV(object):
             if n not in (
                     'bool', 'float', 'int', 'str',
                     'date', 'time', 'datetime',
+                    'none',
                     ):
                 raise TypeError('CSV: data type invalid-> %r' % (n, ))
             setattr(self, '_'+n, t)
@@ -83,7 +85,7 @@ class CSV(object):
             self.save()
 
     def __getitem__(self, index):
-        if isinstance(index, int):
+        if isinstance(index, baseinteger):
             return self.from_csv(self.data[index])
         # better be a slice
         lines = []
@@ -194,7 +196,7 @@ class CSV(object):
         for i, field in enumerate(fields):
             try:
                 if not field:
-                    final.append(self._none)
+                    final.append(self._none(None))
                     continue
                 for test, convert in self.custom_types:
                     if test(field):
@@ -212,7 +214,7 @@ class CSV(object):
                         # TODO: use a re instead and support time zones
                         try:
                             year, month, day, hour, minute, second = map(
-                                    int,
+                                    long,
                                     re.match(r'^(\d+)-(\d+)-(\d+).(\d+):(\d+):(\d+)$', field).groups()
                                     )
                             final.append(self._datetime(year, month, day, hour, minute, second))
@@ -222,7 +224,7 @@ class CSV(object):
                         # final.append(self._date.strptime(field, '%Y-%m-%d'))
                         try:
                             year, month, day, = map(
-                                    int,
+                                    long,
                                     re.match(r'^(\d+)-(\d+)-(\d+)$', field).groups()
                                     )
                             final.append(self._date(year, month, day))
@@ -232,7 +234,7 @@ class CSV(object):
                         # final.append(self._time.strptime(field, '%H:%M:%S'))
                         try:
                             year, month, day, = map(
-                                    int,
+                                    long,
                                     re.match(r'^(\d+):(\d+):(\d+)$', field).groups()
                                     )
                             final.append(self._date(year, month, day))
@@ -290,13 +292,13 @@ class CSV(object):
             elif isinstance(datum, basestring):
                 datum = datum.replace('"','""').replace('\\','\\\\').replace('\n',r'\n')
                 line.append('"%s"' % datum)
-            elif isinstance(datum, (datetime.datetime, self._datetime)):
+            elif isinstance(datum, (datetimes + (self._datetime, ))):
                 line.append(datum.strftime('%Y-%m-%d %H:%M:%S'))
-            elif isinstance(datum, (datetime.date, self._date)):
+            elif isinstance(datum, (dates + (self._date, ))):
                 line.append(datum.strftime('%Y-%m-%d'))
-            elif isinstance(datum, (datetime.time, self._time)):
+            elif isinstance(datum, (times + (self._time, ))):
                 line.append(datum.strftime('%H:%M:%S'))
-            elif isinstance(datum, (bool, self._bool)):
+            elif isinstance(datum, (bool, Logical, self._bool)):
                 line.append('ft'[datum])
             elif isinstance(datum, enums):
                 line.append(repr(datum.value))

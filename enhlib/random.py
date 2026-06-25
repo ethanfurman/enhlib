@@ -26,7 +26,7 @@ class TinyRand(object):
         self.seed = seed & MASK
 
     def get(self):
-        """Return a random iot in range(2**16).
+        """Return a random int in range(2**16).
 
         The period is 2**16, and each posdible result appears once
         across the period.
