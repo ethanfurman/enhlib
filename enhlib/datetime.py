@@ -1205,7 +1205,6 @@ class TimeDelta(object):
             r = TimeDelta(seconds=s, microseconds=m)
             return q, r
         except (ValueError, TypeError):
-            raise
             return NotImplemented
 
     def __eq__(self, other):
@@ -1299,6 +1298,43 @@ class TimeDelta(object):
     else:
         def __bool__(self):
             return self._bool
+
+    def __rtruediv__(self, other):
+        try:
+            if isinstance(other, timedeltas):
+                other = (other.days*OD + other.seconds) * MILLION + other.microseconds
+            else:
+                other *= MILLION
+            return other / ((self.days*OD + self.seconds) * MILLION + self.microseconds)
+        except (ValueError, TypeError):
+            return NotImplemented
+
+    if PY_VER < (3, 0):
+        __rdiv__ = __rtruediv__
+
+    def __rdivmod__(self, other):
+        try:
+            total = (self.days*OD + self.seconds) * MILLION + self.microseconds
+            if isinstance(other, timedeltas):
+                other = (other.days*OD + other.seconds) * MILLION + other.microseconds
+            else:
+                other *= MILLION
+            q = other // total
+            s, m = divmod(other-q*total, MILLION)
+            r = TimeDelta(seconds=s, microseconds=m)
+            return q, r
+        except (ValueError, TypeError):
+            return NotImplemented
+
+    def __rfloordiv__(self, other):
+        try:
+            if isinstance(other, timedeltas):
+                other = (other.days*OD + other.seconds) * MILLION + other.microseconds
+            else:
+                other *= MILLION
+            return other // ((self.days*OD + self.seconds) * MILLION + self.microseconds)
+        except (ValueError, TypeError):
+            return NotImplemented
 
     def __repr__(self):
         return self._repr

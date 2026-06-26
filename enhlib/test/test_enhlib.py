@@ -511,7 +511,7 @@ class Test_datetime(TestCase):
         self.assertEqual(divmod(un_dia, una_hora), (24, cero))
         self.assertEqual(divmod((un_dia+una_hora), 24*60*60), (1, una_hora))
 
-    @unittest.skipIf(PY_VER < (3, 15), 'datetime.timedelta does not play nice')
+    @unittest.skipIf(PY_VER < (3, 0), 'datetime.timedelta does not play nice in 2.7')
     def test_arithmetic_timedelta_2(self):
         one_day = dt.timedelta(1)
         un_dia = TimeDelta(1)
@@ -521,7 +521,8 @@ class Test_datetime(TestCase):
         cero = TimeDelta(0)
         #
         self.assertEqual(one_hour, una_hora)
-        self.assertEqual(one_hour - one_hour, cero)
+        self.assertEqual(one_hour+una_hora, una_hora*2)
+        self.assertEqual(one_hour - una_hora, cero)
         self.assertEqual(one_day/una_hora, 24)
         self.assertEqual(one_day//una_hora, 24)
         self.assertEqual((one_day+one_hour)/una_hora, 25)
