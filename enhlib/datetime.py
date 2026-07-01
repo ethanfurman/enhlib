@@ -385,9 +385,9 @@ class Date(object):
             this_day = IsoDay(self.isoweekday())
             delta_day += day.days_from(this_day)
             day = None
-        year = (year or old_year) + delta_year
-        month = (month or old_month) + delta_month
-        day = (day or old_day) + delta_day
+        year = (old_year if year is None else year) + delta_year
+        month = (old_month if month is None else month) + delta_month
+        day = (old_day if day is None else day) + delta_day
         days_in_month = (days_per_month, days_per_leap_month)[is_leapyear(year)]
         while not(0 < month < 13) or not (0 < day <= days_in_month[month]):
             while month < 1:
@@ -704,13 +704,13 @@ class DateTime(object):
             this_day = IsoDay(self.isoweekday())
             delta_day += day.days_from(this_day)
             day = None
-        year = (year or old_year) + delta_year
-        month = (month or old_month) + delta_month
-        day = (day or old_day) + delta_day
-        hour = (hour or old_hour) + delta_hour
-        minute = (minute or old_minute) + delta_minute
-        second = (second or old_second) + delta_second
-        microsecond = (microsecond or old_micro) + delta_microsecond
+        year = (old_year if year is None else year) + delta_year
+        month = (old_month if month is None else month) + delta_month
+        day = (old_day if day is None else day) + delta_day
+        hour = (old_hour if hour is None else hour) + delta_hour
+        minute = (old_minute if minute is None else minute) + delta_minute
+        second = (old_second if second is None else second) + delta_second
+        microsecond = (old_micro if microsecond is None else microsecond) + delta_microsecond
         days_in_month = (days_per_month, days_per_leap_month)[is_leapyear(year)]
         while (
                 not (0 < month < 13)
@@ -1051,10 +1051,10 @@ class Time(object):
         if tzinfo is None:
             tzinfo = self._time.tzinfo
         old_hour, old_minute, old_second, old_micro = self.hour, self.minute, self.second, self.microsecond
-        hour = (hour or old_hour) + delta_hour
-        minute = (minute or old_minute) + delta_minute
-        second = (second or old_second) + delta_second
-        microsecond = (microsecond or old_micro) + delta_microsecond
+        hour = (old_hour if hour is None else hour) + delta_hour
+        minute = (old_minute if minute is None else minute) + delta_minute
+        second = (old_second if second is None else second) + delta_second
+        microsecond = (old_micro if microsecond is None else microsecond) + delta_microsecond
         while not (0 <= hour < 24) or not (0 <= minute < OM) or not (0 <= second < OM) or not (0 <= microsecond < MILLION):
             while microsecond < 0:
                 second -= 1

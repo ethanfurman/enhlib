@@ -345,7 +345,7 @@ class Test_datetime(TestCase):
         date1 = Date.fromordinal(1000)
         date2 = Date.fromordinal(2000)
         date3 = Date.fromordinal(3000)
-        self.compareTimes(nodate1, nodate2, date1, date2, date3)
+        self._compareTimes(nodate1, nodate2, date1, date2, date3)
 
     def test_datetime_creation(self):
         self.assertEqual(DateTime(), NullDateTime)
@@ -362,7 +362,7 @@ class Test_datetime(TestCase):
         datetime1 = DateTime.fromordinal(1000)
         datetime2 = DateTime.fromordinal(20000)
         datetime3 = DateTime.fromordinal(300000)
-        self.compareTimes(nodatetime1, nodatetime2, datetime1, datetime2, datetime3)
+        self._compareTimes(nodatetime1, nodatetime2, datetime1, datetime2, datetime3)
 
     def test_time_creation(self):
         self.assertEqual(Time(), NullTime)
@@ -377,7 +377,7 @@ class Test_datetime(TestCase):
         time1 = Time.fromfloat(7.75)
         time2 = Time.fromfloat(9.5)
         time3 = Time.fromfloat(16.25)
-        self.compareTimes(notime1, notime2, time1, time2, time3)
+        self._compareTimes(notime1, notime2, time1, time2, time3)
 
     @unittest.skipIf(pytz is None, 'pytz not installed')
     def test_datetime_tz(self):
@@ -528,6 +528,24 @@ class Test_datetime(TestCase):
         self.assertEqual((one_day+one_hour)/una_hora, 25)
         self.assertEqual((one_day+one_hour)//una_hora, 25)
 
+    def test_replace(self):
+        self.assertEqual(
+                DateTime(2026, 6, 30, 9, 30, 11, 19286).replace(year=2019, month=7, day=9, hour=0, minute=0, second=0, microsecond=0),
+                DateTime(2019, 7, 9, 0, 0, 0, 0),
+                )
+        self.assertEqual(
+                Time(9, 30, 11, 19286).replace(hour=0, minute=0, second=0, microsecond=0),
+                Time(0, 0, 0, 0),
+                )
+        self.assertEqual(
+                Date(2026, 6, 30).replace(year=2019, month=7, day=9),
+                Date(2019, 7, 9),
+                )
+        self.assertRaisesRegex(
+                ValueError,
+                '(year is out of range)|(year 0 is out of range)|(year must be in.* not 0)',
+                Date(2026, 6, 30).replace, year=0,
+                )
 
     def test_none_compare(self):
         empty_date = Date()
@@ -559,7 +577,7 @@ class Test_datetime(TestCase):
         self.assertEqual(bool(actual_time), True)
         self.assertEqual(bool(actual_datetime), True)
 
-    def compareTimes(self, empty1, empty2, uno, dos, tres):
+    def _compareTimes(self, empty1, empty2, uno, dos, tres):
         self.assertTrue(empty1 is empty2)
         self.assertTrue(empty1 < uno, '%r is not less than %r' % (empty1, uno))
         self.assertFalse(empty1 > uno, '%r is less than %r' % (empty1, uno))
